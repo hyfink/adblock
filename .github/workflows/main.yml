@@ -20,9 +20,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v7
 
-      - name: Install Sing-Box
+      - name: Install Sing-Box (From GitHub Releases)
         run: |
-          bash <(curl -fsSL https://sing-box.app/install.sh | sh)
+          
+          # 2. 下载适用于 Ubuntu (Linux amd64) 的二进制压缩包
+          curl -Lo sing-box.tar.gz "https://github.com/SagerNet/sing-box/releases/download/v1.14.0/sing-box-1.14.0-linux-amd64.tar.gz"
+          
+          # 3. 解压并将 sing-box 二进制文件移动到系统 PATH 路径下
+          tar -zxf sing-box.tar.gz
+          sudo mv sing-box-${VERSION}-linux-amd64/sing-box /usr/local/bin/
+          
+          # 4. 验证安装
           sing-box version
 
       - name: Download and Convert IPCIDR
