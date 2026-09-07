@@ -2,7 +2,7 @@ name: Compile Sing-Box SRS Ruleset
 
 on:
   schedule:
-    - cron: '0 5 * * *' # 每天北京时间早上 5 点自动运行
+    - cron: '0 8 * * *' # 每天北京时间早上 8 点自动运行
   push:
     branches:
       - main
@@ -33,18 +33,16 @@ jobs:
 
       - name: Download and Convert IPCIDR
         run: |
-          # 1. 下载指定的 cn_ipv4.txt 文件
-          curl -sSL "https://raw.githubusercontent.com/DustinWin/geoip/refs/heads/ips/cn_ipv4.txt" -o ipcidr.txt
+          # 1. 下载指定的 cn_ipv4.txt 文件 
+          curl -sSL "https://github.com/DustinWin/ruleset_geodata/releases/download/sing-box-ruleset/cnip.json" -o cnip.json
           
           # 2. 将 IP 列表解析并构造为 sing-box 的 JSON 规则格式
           # 过滤掉空行和注释行
-          echo '{"version": 2, "rules": [{"ip_cidr": [' > cn_ipv4.json
-          awk '/^[0-9a-fA-F:.\/]/ {printf "\"%s\",", $1}' ipcidr.txt | sed 's/,$//' >> cn_ipv4.json
-          echo ']}]}' >> cn_ipv4.json
+          mkdir -p ruleset
+          jq '.version = 2 | walk(if type == "object" and has("ip_cidr") then .ip_cidr |= map(select(contains(":") | not)) else . end)' cnip.json > ruleset/cn_ipv4.json
 
           # 3. 创建输出目录并将 JSON 编译为二进制 SRS
-          mkdir -p ruleset
-          sing-box rule-set compile cn_ipv4.json -o ruleset/cn_ipv4.srs
+          sing-box rule-set compile ruleset/cn_ipv4.json -o ruleset/cn_ipv4.srs
 
       - name: Commit and Push Changes
         run: |
@@ -53,7 +51,7 @@ jobs:
           
           # 检查文件是否有变化，有变化则提交
           if [ -n "$(git status --porcelain ruleset/cn_ipv4.srs)" ]; then
-            git add ruleset/cn_ipv4.srs
+            git add ruleset/
             git commit -m "chore: update cn_ipv4 srs ruleset [skip ci]"
             git push
           else
