@@ -24,11 +24,11 @@ jobs:
         run: |
           
           # 下载适用于 Ubuntu (Linux amd64) 的二进制压缩包
-          curl -sS -L "https://github.com/SagerNet/sing-box/releases/download/v1.14.0/sing-box-1.14.0-linux-amd64.tar.gz" | tar -zx -C ./tools/
-          mv -f "./tools/sing-box-1.14.0-linux-amd64/sing-box" ./tools/sing-box
+          curl -sS -L "https://github.com/SagerNet/sing-box/releases/download/v1.14.0/sing-box-1.14.0-linux-amd64.tar.gz" | tar -zxf
+          mv -f "sing-box-1.14.0-linux-amd64/sing-box" sing-box
           
           # 4. 验证安装
-          ./tools/sing-box version
+          sing-box version
 
       - name: Download and Convert IPCIDR
         run: |
@@ -43,7 +43,7 @@ jobs:
 
           # 3. 创建输出目录并将 JSON 编译为二进制 SRS
           mkdir -p ruleset
-          ./tools/sing-box rule-set compile cn_ipv4.json -o ruleset/cn_ipv4.srs
+          sing-box rule-set compile cn_ipv4.json -o ruleset/cn_ipv4.srs
 
       - name: Commit and Push Changes
         run: |
